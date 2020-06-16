@@ -77,16 +77,22 @@ def detect(img):
 
     indexes = cv2.dnn.NMSBoxes(boxes,confidences,0.4,0.6)
 
+    start = time.time()
     for i in range(len(boxes)):
         if i in indexes:
+            labels,colors = [],[]
             x,y,w,h = boxes[i]
             crop_img = img[y:y+h, x:x+w+40]
             labels = cf.classify(crop_img)                                                  #classification_model(fashion_app)
-            colors = cl.colorize(crop_img)                                                  #finding the top 2 colors in the cropped_image
-            features = {
-                'box' :  boxes[i],
-                'lables' : labels,
-                'colors' : colors
-            }
-            frame_output.append(features)
+
+            if len(labels) != 0:                                                            #if no labels are identified then dont check for color
+                colors = cl.colorize(crop_img)                                              #finding the top 2 colors in the cropped_image
+                features = {
+                    'box' :  boxes[i],
+                    'labels' : labels,
+                    'colors' : colors
+                }
+                frame_output.append(features)
+    end = time.time()
+    print(end-start)
     return frame_output

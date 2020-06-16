@@ -6,6 +6,7 @@ import numpy as np
 import scipy
 import scipy.misc
 import scipy.cluster
+import cv2
 
 NUM_CLUSTERS = 3
 
@@ -34,15 +35,16 @@ def colorize(image):
     index_max = np.argsort(counts)[::-1]                                        # find most frequent
 
     # peak = codes[index_max]
-    codes = codes[:,:-1].astype('int32')
-    colors =[list(codes[index_max[0]]),list(codes[index_max[1]])]
+    # codes = codes.astype('int32')
+    # colors =[list(codes[index_max[0]]),list(codes[index_max[1]])]
     
 
     #colors in hexadecimal format
 
-    # colour = binascii.hexlify(bytearray(int(c) for c in codes[index_max[0]])).decode('ascii')
-    # print('most frequent is %s (#%s)' % (codes[index_max[0]], colour))
-    # colour = binascii.hexlify(bytearray(int(c) for c in codes[index_max[1]])).decode('ascii')
-    # print('most frequent is %s (#%s)' % (codes[index_max[1]], colour))
+    colour1 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[0]])).decode('ascii')
+    # print('most frequent is %s (#%s)' % (codes[index_max[0]], colour1))
+    colour2 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[1]])).decode('ascii')
+    # print('most frequent is %s (#%s)' % (codes[index_max[1]], colour2))
+    colors = [colour1,colour2]
 
     return colors

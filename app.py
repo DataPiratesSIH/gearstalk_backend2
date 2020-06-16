@@ -49,9 +49,10 @@ def index():
 @app.route('/FashionFrame', methods=['POST'])
 def FashionFrame():
     try:
+        start = time.time()
         data = request.form
         seq = data['seq']
-        time = data['time']
+        date = data['time']
         cctv = data['cctv_id']
         image = request.files['photo']
         image_cv = image.read()
@@ -71,22 +72,25 @@ def FashionFrame():
          
         print({
                 "seq": seq,
-                "time": time,
+                "time": date,
                 "cctv_id": cctv,
                 "image": image.filename
             })
 
         
         '''      detection and classification       '''
-        
+        start2 = time.time()
         classification = yolo.detect(img)
+        end = time.time()
+        print(classification)
+        print(end-start,end-start2)
 
 
-        '''      detection and classification       '''
+        '''      writing into the database       '''
         # db.save_file(profile_image.filename, profile_image)
         # db.upload.insert({'username' : request.form.get('username'),'profile_image_name' : profile_image.filename})
 
-        return jsonify({"status": classification}), 200
+        return jsonify({"features": classification}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 

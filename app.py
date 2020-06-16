@@ -11,13 +11,13 @@ from flask_pymongo import pymongo
 import base64
 import datetime
 import utils.yolo as yolo
+import utils.database as database
 
 
 
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
-CONNECTION_STRING = 'mongodb+srv://admin:admin@cluster0-jnsfh.mongodb.net/test?retryWrites=true&w=majority'
 client = pymongo.MongoClient(CONNECTION_STRING)
 db = client.get_database('gearstalk')
 
@@ -38,7 +38,6 @@ def test():
 @app.route('/')
 def index():
     try:
-        
         return '''
             <h1><b>GEARSTALK-BACKEND-2</b></h1>
         '''
@@ -49,11 +48,11 @@ def index():
 @app.route('/FashionFrame', methods=['POST'])
 def FashionFrame():
     try:
-        start = time.time()
+        # start = time.time()
         data = request.form
-        seq = data['seq']
-        date = data['time']
-        cctv = data['cctv_id']
+        video_id = data['video_id']
+        timestamp = data['timestamp']
+        cctv_id = data['cctv_id']
         image = request.files['photo']
         image_cv = image.read()
 
@@ -66,31 +65,35 @@ def FashionFrame():
         
         img = cv2.imdecode(np_image, flags=1)                                                   # convert numpy array to image
 
-        print(img)
-        # cv2.imshow('carol',img)
+        # print(img)
+        # cv2.imshow('frame',img)
         # cv2.waitKey(0)
          
         print({
-                "seq": seq,
-                "time": date,
-                "cctv_id": cctv,
+                "video_id": video_id,
+                "timestamp": timestamp,
+                "cctv_id": cctv_id,
                 "image": image.filename
             })
 
         
         '''      detection and classification       '''
-        start2 = time.time()
-        classification = yolo.detect(img)
-        end = time.time()
-        print(classification)
-        print(end-start,end-start2)
+        # start2 = time.time()
+        frame_output = yolo.detect(img)
+        # end = time.time()
+        # print(frame_output)
+        # print(end-start,end-start2)
 
 
         '''      writing into the database       '''
-        # db.save_file(profile_image.filename, profile_image)
-        # db.upload.insert({'username' : request.form.get('username'),'profile_image_name' : profile_image.filename})
+        # start2 = time.time()
+        status,message = database.save_frame(video_id,cctv_id,frame_output,timestamp)
+        # end = time.time()
+        # print(status,message)
+        # print(end-start,end-start2)
 
-        return jsonify({"features": classification}), 200
+
+        return jsonify({"success": status, "message": message}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 

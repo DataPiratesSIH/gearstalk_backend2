@@ -18,21 +18,19 @@ import utils.database as database
 app = Flask(__name__)
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
-client = pymongo.MongoClient(CONNECTION_STRING)
-db = client.get_database('gearstalk')
 
 
 '''************************************************
                     Routes
 ************************************************'''
 
-
+'''
 #test to insert data to the data base
 @app.route("/test")
 def test():
     db.upload.insert_one({"name": "John"})
     return "Connected to the data base!"
-
+'''
 
 
 @app.route('/')
@@ -48,9 +46,10 @@ def index():
 @app.route('/FashionFrame', methods=['POST'])
 def FashionFrame():
     try:
-        # start = time.time()
+        start = time.time()
         data = request.form
         video_id = data['video_id']
+        frame_sec = data['frame_sec']
         timestamp = data['timestamp']
         cctv_id = data['cctv_id']
         image = request.files['photo']
@@ -71,6 +70,7 @@ def FashionFrame():
          
         print({
                 "video_id": video_id,
+                "frame_sec": frame_sec,
                 "timestamp": timestamp,
                 "cctv_id": cctv_id,
                 "image": image.filename
@@ -86,14 +86,17 @@ def FashionFrame():
 
 
         '''      writing into the database       '''
-        # start2 = time.time()
-        status,message = database.save_frame(video_id,cctv_id,frame_output,timestamp)
-        # end = time.time()
-        # print(status,message)
-        # print(end-start,end-start2)
+        # frame_output = [{"box": [41,71,11,30],"colors": ["#20211f","#565044"],"labels": ["Burkha"]}]
 
 
-        return jsonify({"success": status, "message": message}), 200
+        start2 = time.time()
+        status,message = database.save_frame(video_id,cctv_id,frame_output,timestamp,frame_sec)
+        end = time.time()
+        print(status,message)
+        print(end-start,end-start2)
+
+
+        return jsonify({"success": status, "message": message, "frame_output" : frame_output}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 

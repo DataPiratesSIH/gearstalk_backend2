@@ -6,9 +6,10 @@
 {
     "_id": "ObjectId",
     "video_id": "video_id",
+    "timestamp": "timestamp",
     "metadata": [
         {
-            "timestamp": 0, // 0 seconds
+            "frame_sec": 0, // 0 seconds
             "persons": [
                 {
                     "box": [x,y,w,h],
@@ -23,7 +24,7 @@
             ]
         },
             {
-            "timestamp": 0.5, // 0.5 seconds
+            "frame_sec": 0.5, // 0.5 seconds
             "persons": [
                 {
                     "box": [x,y,w,h],
@@ -38,7 +39,7 @@
             ]
         },
             {
-            "timestamp": 1, // 1 second
+            "frame_sec": 1, // 1 second
             "persons": [
                 {
                     "box": [x,y,w,h],

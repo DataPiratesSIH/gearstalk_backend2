@@ -17,7 +17,7 @@ from bson.json_util import dumps,loads
 #if already exits then append the new person's details into the collection
 
 
-def save_frame(video_id,cctv_id,frame_output,timestamp,frame_sec):
+def save_frame(video_id,frame_output,timestamp,frame_sec):
     if video_id == None:
         status = False
         message = "No video_Id in param."

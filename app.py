@@ -47,11 +47,10 @@ def index():
 def FashionFrame():
     try:
         start = time.time()
-        data = request.form
+        data = json.load(request.files['data']) 
         video_id = data['video_id']
         frame_sec = data['frame_sec']
         timestamp = data['timestamp']
-        cctv_id = data['cctv_id']
         image = request.files['photo']
         image_cv = image.read()
 
@@ -72,7 +71,6 @@ def FashionFrame():
                 "video_id": video_id,
                 "frame_sec": frame_sec,
                 "timestamp": timestamp,
-                "cctv_id": cctv_id,
                 "image": image.filename
             })
 
@@ -90,9 +88,9 @@ def FashionFrame():
 
 
         start2 = time.time()
-        status,message = database.save_frame(video_id,cctv_id,frame_output,timestamp,frame_sec)
+        status,message = database.save_frame(video_id,frame_output,timestamp,frame_sec)
         end = time.time()
-        print(status,message)
+        # print(status,message)
         print(end-start,end-start2)
 
 

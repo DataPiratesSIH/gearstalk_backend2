@@ -47,6 +47,7 @@ def index():
 def FashionFrame():
     try:
         start = time.time()
+        # data = request.form
         data = json.load(request.files['data']) 
         video_id = data['video_id']
         frame_sec = data['frame_sec']

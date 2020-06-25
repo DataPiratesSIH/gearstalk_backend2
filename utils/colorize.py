@@ -7,8 +7,14 @@ import scipy
 import scipy.misc
 import scipy.cluster
 import cv2
+import matplotlib.colors as mc
+from utils.colorlist import colours
 
 NUM_CLUSTERS = 3
+mycss4list = mc.CSS4_COLORS.items()
+
+def nearest_colour( subjects, query ):
+    return min( subjects, key = lambda subject: sum( (s - q) ** 2 for s, q in zip( subject, query ) ) )
 
 def colorize(image):
     
@@ -20,7 +26,7 @@ def colorize(image):
     im = Image.fromarray(img)
 
 
-    # im = Image.open('/content/woman4.png')
+    # im = Image.open('./woman.jpg')
     im = im.resize((100, 100))                                                  # optional, to reduce time
     ar = np.asarray(im)
     shape = ar.shape
@@ -34,17 +40,23 @@ def colorize(image):
 
     index_max = np.argsort(counts)[::-1]                                        # find most frequent
 
-    # peak = codes[index_max]
-    # codes = codes.astype('int32')
-    # colors =[list(codes[index_max[0]]),list(codes[index_max[1]])]
+    '''
+     peak = codes[index_max]
+     codes = codes.astype('int32')
+     colors =[list(codes[index_max[0]]),list(codes[index_max[1]])]
+     '''
     
+    color1 = nearest_colour( colours, tuple(codes[index_max[0]]) )[3]
+    color2 = nearest_colour( colours, tuple(codes[index_max[1]]) )[3]
 
-    #colors in hexadecimal format
+    '''colors in hexadecimal format
 
-    colour1 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[0]])).decode('ascii')
-    # print('most frequent is %s (#%s)' % (codes[index_max[0]], colour1))
-    colour2 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[1]])).decode('ascii')
-    # print('most frequent is %s (#%s)' % (codes[index_max[1]], colour2))
-    colors = [colour1,colour2]
+     colour1 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[0]])).decode('ascii')
+     print('most frequent is %s (#%s)' % (codes[index_max[0]], colour1))
+     colour2 = '#' + binascii.hexlify(bytearray(int(c) for c in codes[index_max[1]])).decode('ascii')
+     print('most frequent is %s (#%s)' % (codes[index_max[1]], colour2))
+    
+    '''
+    colors = [color1,color2]
 
     return colors

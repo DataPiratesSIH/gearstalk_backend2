@@ -42,18 +42,8 @@ def save_frame(video_id,frame_output,timestamp,frame_sec):
                 "frame_sec" : frame_sec,
                 "persons" : dumps(frame_output)
             }
-            # data = features['metadata'] + frame_details
-            # print(data)
             newvalues = { "$push": {"metadata" : frame_details }}
             result = db.features.find_and_modify({ "_id": ObjectId(features['_id'])}, newvalues )
-            # print(result)
-            # if result['matched_count'] == 0:
-            #     status = False
-            #     message = "ObjectId cannot be found."
-            # elif result['modified_count']  == 0:
-            #     status = False
-            #     message = "Failed to modify document as no changes were made."
-            # else:
             status = True
             message = "Frame output successfully added to the db!!"
         

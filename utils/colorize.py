@@ -7,11 +7,9 @@ import scipy
 import scipy.misc
 import scipy.cluster
 import cv2
-import matplotlib.colors as mc
 from utils.colorlist import colours
 
 NUM_CLUSTERS = 3
-mycss4list = mc.CSS4_COLORS.items()
 
 def nearest_colour( subjects, query ):
     return min( subjects, key = lambda subject: sum( (s - q) ** 2 for s, q in zip( subject, query ) ) )

@@ -12,6 +12,7 @@ import base64
 import datetime
 import utils.yolo as yolo
 import utils.database as database
+import utils.rabbitmq as rabbitmq
 
 
 
@@ -24,14 +25,6 @@ CORS(app)
                     Routes
 ************************************************'''
 
-'''
-#test to insert data to the data base
-@app.route("/test")
-def test():
-    db.upload.insert_one({"name": "John"})
-    return "Connected to the data base!"
-'''
-
 
 @app.route('/')
 def index():
@@ -43,63 +36,85 @@ def index():
         return f"An Error Occured: {e}"
 
 
-@app.route('/FashionFrame', methods=['POST'])
-def FashionFrame():
+
+''' -------------------------------------------------
+        Recives image_frames and processes it
+----------------------------------------------------'''
+
+@app.route('/FashionFrame', methods=['GET'])
+def FashionFrame(data):
     try:
-        start = time.time()
-        # data = request.form
-        data = json.load(request.files['data']) 
+        data = json.loads(data)
+        # data = json.load(request.files['data']) 
         video_id = data['video_id']
         frame_sec = data['frame_sec']
+        total_frames = data['total_frames']
         timestamp = data['timestamp']
-        image = request.files['photo']
-        image_cv = image.read()
+        image = data['photo']
+        # image_cv = image.read()
 
 
         '''      convert the filestorge image to cv2 format       '''
         # (using file system instead)
-        # original = base64.b64decode(string)                                                   # to convert the string image to image buffer
-
-        np_image = np.frombuffer(image_cv, dtype=np.uint8)                                      # convert string data to numpy array
-        
+        original = base64.b64decode(image)                                                   # to convert the string image to image buffer
+        np_image = np.frombuffer(original, dtype=np.uint8)                                      # convert string data to numpy array
         img = cv2.imdecode(np_image, flags=1)                                                   # convert numpy array to image
-
-        # print(img)
-        # cv2.imshow('frame',img)
-        # cv2.waitKey(0)
-         
-        print({
-                "video_id": video_id,
-                "frame_sec": frame_sec,
-                "timestamp": timestamp,
-                "image": image.filename
-            })
 
         
         '''      detection and classification       '''
-        # start2 = time.time()
+        # (using tiny-yolo could reduce accuracy)
         frame_output = yolo.detect(img)
+
+
+        # '''      writing into the database       '''
+        # (either save here or return and save)
+        # status,message = database.save_frame(video_id,frame_output,timestamp,frame_sec)
         # end = time.time()
-        # print(frame_output)
-        # print(end-start,end-start2)
+        # print(end-start)
 
 
-        '''      writing into the database       '''
-        # frame_output = [{"box": [41,71,11,30],"colors": ["#20211f","#565044"],"labels": ["Burkha"]}]
+        '''      Reverting back the data to the host       '''
 
+        frame_details = [{
+                "frame_sec" : frame_sec,
+                "persons" : json.dumps(frame_output)
+            }]
 
-        start2 = time.time()
-        status,message = database.save_frame(video_id,frame_output,timestamp,frame_sec)
-        end = time.time()
-        # print(status,message)
-        print(end-start,end-start2)
+        print({
+                "video_id": video_id,
+                "frame_sec": frame_sec,
+                "total_frames": total_frames,
+                "timestamp": timestamp,
+                "frame_output": frame_details
+            })
+        
+        data = {
+            "video_id": video_id,
+            "frame_details" : frame_details,
+            "frame_sec": frame_sec,
+            "total_frames": total_frames,
+            "timestamp": timestamp
+        }
 
+        message = json.dumps(data)
 
-        return jsonify({"success": status, "message": message, "frame_output" : frame_output}), 200
+        # rabbitmq.rabbitmq_bridge(video_id,frame_sec,frame_details,total_frames)
+        # (enter the host URL here) 
+        requests.post("https://8a21f4a8bb86.ngrok.io/process/FindUnique", data=message)
+        
+
+        return jsonify({"success": status, "message": message, "frame_output" : video_id}), 200
     except Exception as e:
         return f"An Error Occured: {e}"
 
 
+
+#todo
+
+''' -------------------------------------------------
+        Recives the url and processes it
+            (For realtime detection)
+----------------------------------------------------'''
 
 # @app.route('/live', methods=['POST'])
 # def livestream():
@@ -140,4 +155,5 @@ def FashionFrame():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, use_reloader=True, threaded=True)
+    rabbitmq.rabbitmq_bridge()
+    app.run(debug=True, use_reloader=True, threaded=True,port=3000)

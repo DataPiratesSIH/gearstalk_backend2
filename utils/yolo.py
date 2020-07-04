@@ -83,7 +83,6 @@ def detect(img):
 
     indexes = cv2.dnn.NMSBoxes(boxes,confidences,0.4,0.6)
 
-    start = time.time()
     for i in range(len(boxes)):
         if i in indexes:
             labels,colors = [],[]
@@ -99,6 +98,4 @@ def detect(img):
                     'colors' : colors
                 }
                 frame_output.append(features)
-    end = time.time()
-    print(end-start)
     return frame_output

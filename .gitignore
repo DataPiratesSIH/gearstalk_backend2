@@ -1,4 +1,4 @@
 /env/
-/models/yolo_base_models/
-/__pycache__/*
-/utils/__pycache__
+/flask/models/yolo_base_models/
+/flask/__pycache__/*
+/flask/utils/__pycache__

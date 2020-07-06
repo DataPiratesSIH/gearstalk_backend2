@@ -155,5 +155,5 @@ def FashionFrame(data):
 
 
 if __name__ == '__main__':
-    rabbitmq.rabbitmq_bridge()
-    app.run(debug=True, use_reloader=True, threaded=True)
+    # rabbitmq.rabbitmq_bridge()
+    app.run(host="0.0.0.0", debug=True, use_reloader=True, threaded=True)

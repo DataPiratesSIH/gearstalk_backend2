@@ -2,16 +2,46 @@ version: "3.7"
 
 services:
 
-  flask:
-    build: ./flask
-    container_name: flask
-    restart: always
-    expose:
-      - 8080
-
   nginx:
-    build: ./nginx
-    container_name: nginx
-    restart: always
-    ports:
-      - "80:80"
+      container_name: "nginx"
+      build:
+        context: nginx
+      restart:
+        on-failure
+      networks:
+        - gateway
+      ports:
+        - 80:80
+      depends_on:
+        - server1
+        - server2
+
+  server1:
+    container_name: server1
+    networks:
+      - gateway
+    env_file:
+      - ./flask/.env
+    build : 
+      context: flask
+    volumes:
+      - ./flask:/app
+    command: 
+      gunicorn -w 2 --chdir /app wsgi:app -b :8080 --log-level debug --reload
+
+  server2:
+    container_name: server2
+    networks:
+      - gateway
+    env_file:
+      - ./flask/.env
+    build : 
+      context: flask
+    volumes:
+      - ./flask:/app
+    command: 
+      gunicorn -w 2 --chdir /app wsgi:app -b :8080 --log-level debug --reload
+
+
+networks:
+  gateway: {}

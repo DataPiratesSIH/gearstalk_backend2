@@ -14,9 +14,8 @@ import utils.yolo as yolo
 import utils.database as database
 import utils.rabbitmq as rabbitmq
 
-
-
 app = Flask(__name__)
+
 app.config['CORS_HEADERS'] = 'Content-Type'
 CORS(app)
 

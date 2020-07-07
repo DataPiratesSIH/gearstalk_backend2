@@ -1,6 +1,5 @@
-import os
-from flask import Flask, request, jsonify, make_response, render_template, Response
-from flask_cors import CORS
+# from flask import Flask, request, jsonify, make_response, render_template, Response
+# from flask_cors import CORS
 import json,requests
 import time
 import cv2
@@ -10,23 +9,28 @@ import datetime
 from flask_pymongo import pymongo
 import base64
 import datetime
+
+#Processing_models
 import utils.yolo as yolo
 import utils.database as database
 import utils.rabbitmq as rabbitmq
 
+#concurrent_futures subprocessing
+import concurrent.futures
+
+# app = Flask(__name__)
+# app.config['CORS_HEADERS'] = 'Content-Type'
+# CORS(app)
 
 
-app = Flask(__name__)
-app.config['CORS_HEADERS'] = 'Content-Type'
-CORS(app)
-
+executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
 
 '''************************************************
                     Routes
 ************************************************'''
 
 
-@app.route('/')
+# @app.route('/')
 def index():
     try:
         return '''
@@ -41,9 +45,10 @@ def index():
         Recives image_frames and processes it
 ----------------------------------------------------'''
 
-@app.route('/FashionFrame', methods=['GET'])
+# @app.route('/FashionFrame', methods=['GET'])
 def FashionFrame(data):
     try:
+        start = time.time()
         data = json.loads(data)
         # data = json.load(request.files['data']) 
         video_id = data['video_id']
@@ -100,7 +105,10 @@ def FashionFrame(data):
 
         # rabbitmq.rabbitmq_bridge(video_id,frame_sec,frame_details,total_frames)
         # (enter the host URL here) 
-        requests.post("https://8a21f4a8bb86.ngrok.io/process/FindUnique", data=message)
+        # requests.post("https://8a21f4a8bb86.ngrok.io/process/FindUnique", data=message)
+
+        print({"success": status, "message": message, "frame_output" : video_id})
+        print(time.time()-start)
         
 
         return jsonify({"success": status, "message": message, "frame_output" : video_id}), 200
@@ -155,5 +163,10 @@ def FashionFrame(data):
 
 
 if __name__ == '__main__':
-    rabbitmq.rabbitmq_bridge()
-    app.run(debug=True, use_reloader=True, threaded=True)
+    # app.run(host="0.0.0.0", debug=True, use_reloader=True, threaded=True)
+    try:
+        while True:
+            executor.submit(rabbitmq.rabbitmq_bridge)
+    except KeyboardInterrupt:
+        quit = True
+    

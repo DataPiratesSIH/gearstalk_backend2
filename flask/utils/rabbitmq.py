@@ -1,12 +1,12 @@
 import pika
 import json
 import os
-from app import FashionFrame
-from dotenv import load_dotenv
-load_dotenv()
 
+from run import FashionFrame
+from dotenv import load_dotenv
+
+load_dotenv()
 # HOSTURL = os.getenv("HOST_URL")
-HOSTURL = "https://strong-mayfly-7.serverless.social/process/FindUnique"
 RABBITMQ_USERNAME = os.getenv("RABBITMQ_USERNAME")
 RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
@@ -22,8 +22,8 @@ def rabbitmq_bridge():
     channel.queue_declare(queue='video_frame')
 
     def callback(ch, method, properties, body):
-        FashionFrame(body)
-        print(" [x] Received ")
+            print(" [x] Received ")
+            FashionFrame(body)
 
 
     channel.basic_consume(

@@ -1,14 +1,14 @@
 FROM python:3.7-slim as base
 
-WORKDIR /app
-COPY requirements.txt /app
-RUN pip3 install -r  /app/requirements.txt
+WORKDIR /flask
+COPY requirements.txt /flask
+RUN pip3 install -r  /flask/requirements.txt
 
-ADD . /app
-VOLUME /app
+ADD . /flask
+VOLUME /flask
 # EXPOSE 5000
 
-# CMD ["gunicorn" ,"-w" ,"2" ,"--chdir" ,"/app" ,"app:app", "-b" ,":5000", "--log-level" ,"debug", "--reload"]
+# CMD ["gunicorn" ,"-w" ,"2" ,"--chdir" ,"/flask" ,"flask:flask", "-b" ,":5000", "--log-level" ,"debug", "--reload"]
 
 # Step 1: Import the Os
 # FROM alpine:latest
@@ -18,10 +18,10 @@ VOLUME /app
 #     && pip3 install --upgrade pip
 
 # # Step 3: Create a Work Directory
-# WORKDIR /app
+# WORKDIR /flask
 
 # # Step 4: copy all Project Files
-# COPY . /app
+# COPY . /flask
 
 # # Step 5: Install all Dependencies for WSGI
 # RUN set -e; \
@@ -34,4 +34,4 @@ VOLUME /app
 # 	apk del .build-deps;
 
 # Step 6:  run the command to start uWSGI
-CMD ["gunicorn" , "app.ini"]
+CMD ["uwsgi" , "app.ini"]

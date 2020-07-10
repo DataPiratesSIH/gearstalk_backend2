@@ -9,12 +9,14 @@ import scipy.cluster
 import cv2
 from utils.colorlist import colours
 
-NUM_CLUSTERS = 3
 
 def nearest_colour( subjects, query ):
     return min( subjects, key = lambda subject: sum( (s - q) ** 2 for s, q in zip( subject, query ) ) )
 
-def colorize(image):
+def colorize(image,color_length):
+
+    #define cluster_length
+    NUM_CLUSTERS = color_length + 1
     
     ''' 
     the input image is in opencv format.
@@ -43,9 +45,13 @@ def colorize(image):
      codes = codes.astype('int32')
      colors =[list(codes[index_max[0]]),list(codes[index_max[1]])]
      '''
+    colors = []
     
-    color1 = nearest_colour( colours, tuple(codes[index_max[0]]) )[3]
-    color2 = nearest_colour( colours, tuple(codes[index_max[1]]) )[3]
+    for i in range(color_length):
+        colors.append(nearest_colour( colours, tuple(codes[index_max[i]]) )[3])
+
+    # color1 = nearest_colour( colours, tuple(codes[index_max[0]]) )[3]
+    # color2 = nearest_colour( colours, tuple(codes[index_max[1]]) )[3]
 
     '''colors in hexadecimal format
 
@@ -55,6 +61,6 @@ def colorize(image):
      print('most frequent is %s (#%s)' % (codes[index_max[1]], colour2))
     
     '''
-    colors = [color1,color2]
+    # colors = [color1,color2]
 
     return colors

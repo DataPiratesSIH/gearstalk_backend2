@@ -1,43 +1,34 @@
-# from flask import Flask, request, jsonify, make_response, render_template, Response
-# from flask_cors import CORS
 import json,requests
 import time
 import cv2
 import numpy as np
 from skimage import io
 import datetime
-from flask_pymongo import pymongo
 import base64
 import datetime
 
 #Processing_models
 import utils.yolo as yolo
-import utils.database as database
+# import utils.database as database
 import utils.rabbitmq as rabbitmq
 
 #concurrent_futures subprocessing
 import concurrent.futures
 
-# app = Flask(__name__)
-# app.config['CORS_HEADERS'] = 'Content-Type'
-# CORS(app)
 
+executor = concurrent.futures.ProcessPoolExecutor(max_workers=3)
 
-executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+# '''************************************************
+#                 Processing-Functions
+# ************************************************'''
 
-'''************************************************
-                    Routes
-************************************************'''
-
-
-# @app.route('/')
-def index():
-    try:
-        return '''
-            <h1><b>GEARSTALK-BACKEND-2</b></h1>
-        '''
-    except Exception as e:
-        return f"An Error Occured: {e}"
+# def index():
+#     try:
+#         return '''
+#             <h1><b>GEARSTALK-BACKEND-2</b></h1>
+#         '''
+#     except Exception as e:
+#         return f"An Error Occured: {e}"
 
 
 
@@ -45,7 +36,6 @@ def index():
         Recives image_frames and processes it
 ----------------------------------------------------'''
 
-# @app.route('/FashionFrame', methods=['GET'])
 def FashionFrame(data):
     try:
         start = time.time()
@@ -56,7 +46,6 @@ def FashionFrame(data):
         total_frames = data['total_frames']
         timestamp = data['timestamp']
         image = data['photo']
-        # image_cv = image.read()
 
 
         '''      convert the filestorge image to cv2 format       '''
@@ -68,50 +57,39 @@ def FashionFrame(data):
         
         '''      detection and classification       '''
         # (using tiny-yolo could reduce accuracy)
-        frame_output = yolo.detect(img)
+        frame_details = yolo.detect(img)
 
 
         # '''      writing into the database       '''
         # (either save here or return and save)
-        # status,message = database.save_frame(video_id,frame_output,timestamp,frame_sec)
+        # status,message = database.save_frame(video_id,frame_details,timestamp,frame_sec)
         # end = time.time()
         # print(end-start)
 
 
         '''      Reverting back the data to the host       '''
 
-        frame_details = [{
-                "frame_sec" : frame_sec,
-                "persons" : json.dumps(frame_output)
-            }]
-
-        print({
-                "video_id": video_id,
-                "frame_sec": frame_sec,
-                "total_frames": total_frames,
-                "timestamp": timestamp,
-                "frame_output": frame_details
-            })
+        # frame_details = [{
+        #         "frame_sec" : frame_sec,
+        #         "persons" : json.dumps(frame_output)
+        #     }]
         
         data = {
             "video_id": video_id,
-            "frame_details" : frame_details,
+            "frame_details" : json.dumps(frame_details),
             "frame_sec": frame_sec,
             "total_frames": total_frames,
             "timestamp": timestamp
         }
 
-        message = json.dumps(data)
+        #adding the processed output back to the rabbbitmq-queue
+        rabbitmq.rabbitmq_producer(data)
 
-        # rabbitmq.rabbitmq_bridge(video_id,frame_sec,frame_details,total_frames)
-        # (enter the host URL here) 
-        # requests.post("https://8a21f4a8bb86.ngrok.io/process/FindUnique", data=message)
 
-        print({"success": status, "message": message, "frame_output" : video_id})
-        print(time.time()-start)
+        print({"success": data})
         
 
-        return jsonify({"success": status, "message": message, "frame_output" : video_id}), 200
+        return "jsonify(), 200"
     except Exception as e:
         return f"An Error Occured: {e}"
 
@@ -166,7 +144,7 @@ if __name__ == '__main__':
     # app.run(host="0.0.0.0", debug=True, use_reloader=True, threaded=True)
     try:
         while True:
-            executor.submit(rabbitmq.rabbitmq_bridge)
+            executor.submit(rabbitmq.rabbitmq_consumer)
     except KeyboardInterrupt:
         quit = True
     

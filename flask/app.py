@@ -6,7 +6,6 @@ import cv2
 import numpy as np
 from skimage import io
 import datetime
-from flask_pymongo import pymongo
 import base64
 import datetime
 

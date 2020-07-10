@@ -1,0 +1,9 @@
+**/README.md
+**/__pycache__
+**/*.ipynb
+**/.env
+**/.gitignore
+**/*.yml
+**/Dockerfile
+**/.dockerignore
+**/rb.py

@@ -21,12 +21,12 @@ import utils.colorize as cl
 # derive the paths to the YOLO weights and model configuration
 
 #yolo-tiny weights(less accurate)
-# weightsPath = "./models/yolo_coco/yolov3-tiny.weights"
-# configPath = "./models/yolo_coco/yolov3-tiny.cfg"
+weightsPath = "./models/yolo_coco/yolov3-tiny.weights"
+configPath = "./models/yolo_coco/yolov3-tiny.cfg"
 
 #yolo weights(more accurate)
-weightsPath = "./models/yolo_base_models/yolov3.weights"
-configPath = "./models/yolo_base_models/yolov3.cfg"
+# weightsPath = "./models/yolo_base_models/yolov3.weights"
+# configPath = "./models/yolo_base_models/yolov3.cfg"
 
 #Load YOLO
 net = cv2.dnn.readNet(weightsPath,configPath)

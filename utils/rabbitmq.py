@@ -6,7 +6,7 @@ from app import FashionFrame
 from dotenv import load_dotenv
 
 load_dotenv()
-# HOSTURL = os.getenv("HOST_URL")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 RABBITMQ_USERNAME = os.getenv("RABBITMQ_USERNAME")
 RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 
@@ -18,11 +18,12 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 ------------------------------------------'''
 
 def rabbitmq_consumer():
-    credentials = pika.PlainCredentials('test', 'test')
+    credentials = pika.PlainCredentials('gearstalk', 'gearstalk')
 
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost', credentials=credentials))                       #load_balancer url/ip in (host)
+        pika.ConnectionParameters(host='139.59.12.237',port=5672,credentials=credentials))                       #load_balancer url/ip in (host)
     channel = connection.channel()
+    
 
     channel.queue_declare(queue='video_frame')
 
@@ -45,10 +46,10 @@ def rabbitmq_consumer():
 ------------------------------------------'''
 
 def rabbitmq_producer(data):
-    credentials = pika.PlainCredentials('test', 'test')
+    credentials = pika.PlainCredentials(RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
 
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='localhost',
+        pika.ConnectionParameters(host=RABBITMQ_HOST,port=5672,
                                     credentials=credentials))                       #load_balancer url/ip in (host)
     channel = connection.channel()
 
@@ -62,13 +63,37 @@ def rabbitmq_producer(data):
 
 
 
+
+'''-----------------------------------------
+        Producing failed packets into
+                rabbitmq queue
+------------------------------------------'''
+
+def rabbitmq_reproducer(data):
+    credentials = pika.PlainCredentials(RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
+
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=RABBITMQ_HOST,port=5672,
+                                    credentials=credentials))                       #load_balancer url/ip in (host)
+    channel = connection.channel()
+
+    channel.queue_declare(queue='video_frame')
+
+    message = json.dumps(data)
+    
+    channel.basic_publish(exchange='', routing_key='video_frame', body=message)
+    print(" [x] ReSent The JSON Data into the queue")
+    connection.close()
+
+
+
 '''-----------------------------------------
         For Realtime Detection (todo)
 ------------------------------------------'''
 
 '''
 def rabbitmq_live(cam_id, lat, lng, url):
-    credentials = pika.PlainCredentials('test', 'test')
+    credentials = pika.PlainCredentials(RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
 
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host='127.0.1.1', credentials=credentials))

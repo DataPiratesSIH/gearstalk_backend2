@@ -18,10 +18,10 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD")
 ------------------------------------------'''
 
 def rabbitmq_consumer():
-    credentials = pika.PlainCredentials('gearstalk', 'gearstalk')
+    credentials = pika.PlainCredentials(RABBITMQ_USERNAME, RABBITMQ_PASSWORD)
 
     connection = pika.BlockingConnection(
-        pika.ConnectionParameters(host='139.59.12.237',port=5672,credentials=credentials))                       #load_balancer url/ip in (host)
+        pika.ConnectionParameters(host=RABBITMQ_HOST,port=5672,credentials=credentials))                       #load_balancer url/ip in (host)
     channel = connection.channel()
     
 
@@ -79,9 +79,9 @@ def rabbitmq_reproducer(data):
 
     channel.queue_declare(queue='video_frame')
 
-    message = json.dumps(data)
+    # message = json.dumps(data)
     
-    channel.basic_publish(exchange='', routing_key='video_frame', body=message)
+    channel.basic_publish(exchange='', routing_key='video_frame', body=data)
     print(" [x] ReSent The JSON Data into the queue")
     connection.close()
 

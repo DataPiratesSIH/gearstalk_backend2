@@ -90,8 +90,10 @@ def FashionFrame(data):
         
 
         return "jsonify(), 200"
-    except Exception as e:
-        return f"An Error Occured: {e}"
+    except:
+        rabbitmq.rabbitmq_reproducer(data)
+        print("RESEND PACKET TO THE QUEUE!!")
+        return f"An Error Occured!!"
 
 
 
@@ -143,8 +145,9 @@ def FashionFrame(data):
 if __name__ == '__main__':
     # app.run(host="0.0.0.0", debug=True, use_reloader=True, threaded=True)
     try:
-        while True:
-            executor.submit(rabbitmq.rabbitmq_consumer)
+        rabbitmq.rabbitmq_consumer()
+        # while True:
+        #     executor.submit(rabbitmq.rabbitmq_consumer)
     except KeyboardInterrupt:
         quit = True
     
